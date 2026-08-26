@@ -1,3 +1,6 @@
 # The-first-REPO
 Just to fool Around GitHub
-,Ai is a Dumbass
+<br>
+ Ai is a Pain 
+<br>
+Name  = Harshit Kandpal
