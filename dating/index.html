@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Date Me? 💕</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Floating hearts background -->
+  <div class="hearts-bg" id="heartsBg"></div>
+
+  <!-- Main card -->
+  <div class="card" id="mainCard">
+    <div class="avatar-ring">
+      <div class="avatar">💘</div>
+    </div>
+
+    <h1 class="title">Hey Beautiful 🌹</h1>
+    <p class="subtitle">I've been working up the courage to ask you this…</p>
+
+    <div class="question-box">
+      <span class="question-emoji" id="questionEmoji">🥺</span>
+      <p class="question" id="questionText">Will you go on a date with me?</p>
+    </div>
+
+    <div class="compliments" id="compliments">
+      <div class="compliment-chip">✨ You're stunning</div>
+      <div class="compliment-chip">🌸 You're kind</div>
+      <div class="compliment-chip">💫 You're amazing</div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn yes-btn" id="yesBtn" onclick="handleYes()">
+        💖 Yes, of course!
+      </button>
+      <button class="btn no-btn" id="noBtn" onclick="handleNo()">
+        😅 No...
+      </button>
+    </div>
+
+    <p class="hint" id="hintText">Click Yes to make me smile �</p>
+  </div>
+
+  <!-- Date Details Form Modal -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal form-modal">
+      <div class="form-header">
+        <span class="form-icon">📋</span>
+        <h2>Let's plan our date! 💕</h2>
+        <p class="form-subtitle">Fill in the details so I can make it perfect 🌹</p>
+      </div>
+
+      <form id="dateForm" onsubmit="handleFormSubmit(event)">
+
+        <div class="form-group">
+          <label for="girlName">
+            <span class="label-icon">👩</span> Your Name
+          </label>
+          <input
+            type="text"
+            id="girlName"
+            placeholder="What's your beautiful name?"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="dateInput">
+            <span class="label-icon">📅</span> Date
+          </label>
+          <input
+            type="date"
+            id="dateInput"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="timeInput">
+            <span class="label-icon">⏰</span> Time
+          </label>
+          <input
+            type="time"
+            id="timeInput"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="locationInput">
+            <span class="label-icon">📍</span> Location
+          </label>
+          <input
+            type="text"
+            id="locationInput"
+            placeholder="Where should we meet?"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <button type="submit" class="btn yes-btn form-submit-btn">
+          💌 Confirm Our Date!
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- YES / Celebration Modal -->
+  <div class="modal-overlay" id="yesModal">
+    <div class="modal yes-modal">
+      <div class="modal-emoji">🎉💕🥳</div>
+      <h2>It's a DATE!!!</h2>
+      <div class="date-summary" id="dateSummary"></div>
+      <p class="modal-sub">Get ready for the best date of your life ✨</p>
+      <div class="fireworks">🎆🎇✨🎊🎉</div>
+
+      <!-- Share / Invite section -->
+      <div class="invite-section">
+        <p class="invite-label">💌 Send her the invitation link</p>
+        <div class="invite-link-box">
+          <span class="invite-url" id="inviteUrl">http://localhost:3000/dating/index.html</span>
+          <button class="copy-btn" id="copyBtn" onclick="copyInviteLink()" title="Copy link">
+            📋
+          </button>
+        </div>
+        <div class="share-buttons">
+          <button class="share-btn whatsapp-btn" onclick="shareWhatsApp()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </button>
+          <button class="share-btn email-btn" onclick="shareEmail()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Email
+          </button>
+        </div>
+      </div>
+
+      <button class="btn yes-btn close-yes-btn" onclick="closeModal('yesModal')">Aww, can't wait! 💕</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast">✅ Link copied to clipboard!</div>
+
+  <!-- NO / Gun Popup Modal -->
+  <div class="modal-overlay" id="noModal">
+    <div class="modal no-modal">
+      <div class="gun-scene">
+        <img
+          class="gun-meme-img"
+          src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Hand_pointing_gun_meme.png"
+          alt="Hand pointing gun meme"
+          draggable="false"
+        />
+      </div>
+      <h2 class="threat-title">Are you sure about that? 😤</h2>
+      <p class="threat-text">Think very carefully before you answer again…</p>
+      <div class="no-modal-buttons">
+        <button class="btn yes-btn big-yes" onclick="handleYesFromNo()">
+          💖 OK OK YES!
+        </button>
+        <button class="btn still-no-btn" onclick="handleStillNo()">
+          😬 Still no...
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regret / Meme Video Modal -->
+  <div class="modal-overlay" id="regretModal">
+    <div class="modal regret-modal">
+      <h2 class="regret-title">😂 Your loss bestie…</h2>
+      <div class="video-wrapper">
+        <video
+          id="memeVideo"
+          src="carryminati.mp4"
+          playsinline
+          controls
+        ></video>
+      </div>
+      <button class="btn yes-btn regret-change-btn" onclick="closeRegretModal(); resetPage()">
+        Wait— I changed my mind! 💕
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
