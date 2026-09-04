@@ -14,9 +14,9 @@
   --purple-mid:   #d8b4fe;
   --purple-deep:  #9333ea;
   --white:        #fff;
-  --text-dark:    #4a1942;
-  --text-mid:     #7c3080;
-  --shadow:       rgba(236, 72, 153, 0.25);
+  --text-dark:    #0c6be7;
+  --text-mid:     #ffb507;
+  --shadow:       rgb(239, 205, 54);
 }
 
 /* ── Body & Background ──────────────────────────────────── */

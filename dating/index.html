@@ -140,12 +140,15 @@
         </div>
       </div>
 
-      <button class="btn yes-btn close-yes-btn" onclick="closeModal('yesModal')">Aww, can't wait! 💕</button>
+      <button class="btn yes-btn close-yes-btn" onclick="document.getElementById('balleBalle').pause(); document.getElementById('balleBalle').currentTime=0; closeModal('yesModal')">Aww, can't wait! 💕</button>
     </div>
   </div>
 
   <!-- Toast notification -->
   <div class="toast" id="toast">✅ Link copied to clipboard!</div>
+
+  <!-- Audio -->
+  <audio id="balleBalle" src="balle-balle.mp3" preload="auto"></audio>
 
   <!-- NO / Gun Popup Modal -->
   <div class="modal-overlay" id="noModal">

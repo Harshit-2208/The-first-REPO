@@ -73,6 +73,12 @@ function handleFormSubmit(e) {
     showModal('yesModal');
     updateInviteUrlDisplay();
     updateQuestion('🥳', `Can't wait, ${name}! 💖`);
+
+    // Play celebration audio at full volume
+    const audio = document.getElementById('balleBalle');
+    audio.volume = 1;
+    audio.currentTime = 0;
+    audio.play();
   }, 200);
 }
 
@@ -135,6 +141,11 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
       const video = document.getElementById('memeVideo');
       video.pause();
       video.currentTime = 0;
+    }
+    if (this.id === 'yesModal') {
+      const audio = document.getElementById('balleBalle');
+      audio.pause();
+      audio.currentTime = 0;
     }
     closeModal(this.id);
   });
@@ -236,6 +247,9 @@ document.addEventListener('keydown', (e) => {
     const video = document.getElementById('memeVideo');
     video.pause();
     video.currentTime = 0;
+    const audio = document.getElementById('balleBalle');
+    audio.pause();
+    audio.currentTime = 0;
     ['yesModal', 'noModal', 'regretModal', 'formModal'].forEach(closeModal);
   }
 });
