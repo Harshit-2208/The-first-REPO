@@ -1,31 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pong Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pong Game</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Pong Game</h1>
-        <div class="scoreboard">
-            <div class="score">
-                <span>Player</span>
-                <span id="playerScore">0</span>
-            </div>
-            <div class="score">
-                <span>Computer</span>
-                <span id="computerScore">0</span>
-            </div>
-        </div>
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div class="instructions">
-            <p><strong>Controls:</strong></p>
-            <p>Mouse Y-position or Arrow Keys (↑/↓) to move the left paddle</p>
-            <p>First to 10 points wins!</p>
-        </div>
+  <div class="container">
+    <h1>Pong Game</h1>
+
+    <!-- Difficulty selector -->
+    <div class="difficulty-bar">
+      <span class="diff-label">Difficulty:</span>
+      <button class="diff-btn" data-diff="easy">🟢 Easy</button>
+      <button class="diff-btn active" data-diff="medium">🟡 Medium</button>
+      <button class="diff-btn" data-diff="hard">🔴 Hard</button>
     </div>
-    <script src="game.js"></script>
+
+    <!-- Scoreboard -->
+    <div class="scoreboard">
+      <div class="score">
+        <span>Player</span>
+        <span id="playerScore">0</span>
+      </div>
+      <div class="score-mid">
+        <button class="control-btn" id="pauseBtn">⏸ Pause</button>
+        <span class="score-sep">—</span>
+        <span class="win-label">First to 10</span>
+      </div>
+      <div class="score">
+        <span>Computer</span>
+        <span id="computerScore">0</span>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+      <!-- Winner overlay (hidden until game over) -->
+      <div class="winner-screen" id="winnerScreen">
+        <div class="winner-box">
+          <p class="winner-text" id="winnerText">🎉 You Win!</p>
+          <button class="control-btn replay-btn" id="replayBtn">🔄 Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <p><strong>Controls:</strong>
+        Mouse · W/S · Arrow ↑↓ to move &nbsp;|&nbsp;
+        <strong>SPACE</strong> to pause
+      </p>
+      <p>Touch: drag finger on canvas to move your paddle</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>

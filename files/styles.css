@@ -1,105 +1,223 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 .container {
-    text-align: center;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    max-width: 900px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 32px 40px 28px;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 900px;
+  width: 100%;
 }
 
 h1 {
-    color: #fff;
-    margin-bottom: 20px;
-    font-size: 2.5em;
-    text-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+  color: #fff;
+  margin-bottom: 16px;
+  font-size: 2.2em;
+  text-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
 }
 
+/* ── Difficulty bar ─────────────────────────────────────── */
+.difficulty-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.diff-label {
+  color: #ccc;
+  font-size: 0.85em;
+  margin-right: 4px;
+}
+
+.diff-btn {
+  background: rgba(255,255,255,0.08);
+  color: #ccc;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.82em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.diff-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.diff-btn.active {
+  background: #00ff88;
+  color: #1a1a2e;
+  border-color: #00ff88;
+  font-weight: bold;
+}
+
+/* ── Scoreboard ─────────────────────────────────────────── */
 .scoreboard {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 30px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 16px 24px;
+  border-radius: 10px;
 }
 
 .score {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
 }
 
 .score span:first-child {
-    color: #ccc;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  color: #ccc;
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .score span:last-child {
-    color: #00ff88;
-    font-size: 2.5em;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+  color: #00ff88;
+  font-size: 2.4em;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0,255,136,0.8);
+}
+
+.score-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.score-sep { display: none; }
+
+.win-label {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.75em;
+  letter-spacing: 1px;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.control-btn {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 7px 20px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.control-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.04);
+}
+
+.control-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Canvas wrapper ─────────────────────────────────────── */
+.canvas-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
 }
 
 #gameCanvas {
-    background: #1a1a2e;
-    border: 3px solid #00ff88;
-    border-radius: 10px;
-    display: block;
-    margin: 0 auto 30px;
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+  background: #1a1a2e;
+  border: 3px solid #00ff88;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 20px rgba(0,255,136,0.4);
+  max-width: 100%;
+  touch-action: none; /* prevent scroll while dragging on touch */
 }
 
+/* ── Winner overlay ─────────────────────────────────────── */
+.winner-screen {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+}
+
+.winner-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
+
+.winner-text {
+  font-size: 2.4em;
+  font-weight: bold;
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0,255,136,0.8);
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.replay-btn {
+  font-size: 1em;
+  padding: 10px 28px;
+  background: #00ff88;
+  color: #1a1a2e;
+  border-color: #00ff88;
+  font-weight: bold;
+}
+
+.replay-btn:hover {
+  background: #00e67a;
+}
+
+/* ── Instructions ───────────────────────────────────────── */
 .instructions {
-    color: #ccc;
-    font-size: 0.9em;
-    line-height: 1.6;
-}
-
-.instructions p {
-    margin: 5px 0;
+  color: #999;
+  font-size: 0.82em;
+  line-height: 1.7;
 }
 
 .instructions strong {
-    color: #00ff88;
+  color: #00ff88;
 }
 
+/* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 600px) {
-    .container {
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
-    #gameCanvas {
-        width: 100%;
-        height: auto;
-    }
-
-    .scoreboard {
-        flex-direction: column;
-        gap: 20px;
-    }
+  .container { padding: 20px 16px; }
+  h1 { font-size: 1.6em; }
+  #gameCanvas { width: 100%; height: auto; }
+  .scoreboard { flex-direction: column; gap: 12px; }
+  .difficulty-bar { flex-wrap: wrap; }
 }
