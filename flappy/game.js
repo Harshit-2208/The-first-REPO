@@ -29,62 +29,18 @@ const SCORES_PER_LEVEL = 5;
 
 const LEVELS = [
   {
-    num: 1, name: 'Ember Cave',
-    gapFraction: 0.38,
-    fireInterval: 1900, fireSpeed: 2.0,   // -2 px/frame
-    gravity: 0.32, flapStr: -7.0, maxFall: 8, holdBonus: -0.18,
-    bgTop: '#1a0000', bgMid: '#2d0a00', bgBot: '#4a1500',
-    lavaTop: '#cc3300', lavaMid: '#ff6600', lavaTip: '#ff8800',
-    particleCount: 3, hueRange: [20, 40],
-    medal: '🥉', desc: 'Welcome to the fire pits!',
-  },
-  {
-    num: 2, name: 'Inferno Shaft',
-    gapFraction: 0.34,
-    fireInterval: 1650, fireSpeed: 2.3,   // ~-2.3 px/frame
-    gravity: 0.35, flapStr: -7.5, maxFall: 8, holdBonus: -0.18,
-    bgTop: '#1a0005', bgMid: '#3d0010', bgBot: '#5a001a',
-    lavaTop: '#aa0033', lavaMid: '#ee1144', lavaTip: '#ff4488',
-    particleCount: 4, hueRange: [0, 15],
-    medal: '🥈', desc: 'The flames grow stronger…',
-  },
-  {
-    num: 3, name: 'Magma Core',
+    num: 1, name: 'Common Level',
     gapFraction: 0.30,
-    fireInterval: 1420, fireSpeed: 2.6,   // ~-2.6 px/frame
-    gravity: 0.38, flapStr: -8.0, maxFall: 8, holdBonus: -0.19,
-    bgTop: '#000d1a', bgMid: '#001a3a', bgBot: '#00285a',
-    lavaTop: '#0044aa', lavaMid: '#0077ff', lavaTip: '#44aaff',
-    particleCount: 5, hueRange: [200, 220],
-    medal: '🏅', desc: 'Blue fire — hotter than ever!',
-  },
-  {
-    num: 4, name: 'Void Furnace',
-    gapFraction: 0.27,
-    fireInterval: 1200, fireSpeed: 2.8,   // ~-2.8 px/frame
-    gravity: 0.42, flapStr: -8.5, maxFall: 8, holdBonus: -0.20,
-    bgTop: '#0d0018', bgMid: '#200040', bgBot: '#380060',
-    lavaTop: '#6600cc', lavaMid: '#9933ff', lavaTip: '#cc88ff',
-    particleCount: 6, hueRange: [270, 290],
-    medal: '🎖️', desc: 'Purple plasma — almost there!',
-  },
-  {
-    num: 5, name: 'Hellfire Apex',
-    gapFraction: 0.24,
-    fireInterval: 1000, fireSpeed: 3.0,   // -3 px/frame (max)
-    gravity: 0.46, flapStr: -9.0, maxFall: 8, holdBonus: -0.20,
-    bgTop: '#000000', bgMid: '#111111', bgBot: '#222222',
-    lavaTop: '#ffffff', lavaMid: '#aaaaaa', lavaTip: '#eeeeee',
-    particleCount: 8, hueRange: [0, 360],
-    medal: '🏆', desc: 'Maximum chaos. Good luck.',
-  },
+    fireInterval: 1500, fireSpeed: 2.5,   // -2.5 px/frame
+    gravity: 0.4, flapStr: -8.0, maxFall: 8, holdBonus: -0.18,
+    bgTop: '#ffffff', bgMid: '#ffffff', bgBot: '#ffffff',
+    lavaTop: '#cc3300', lavaMid: '#ff6600', lavaTip: '#ff8800',
+    particleCount: 5, hueRange: [20, 40],
+    medal: '🏅', desc: 'Endless Run',
+  }
 ];
 
-let currentLevel  = 0;
-let levelUpTimer  = 0;
-const LEVELUP_DUR = 2400;
-
-function getLvl() { return LEVELS[Math.min(currentLevel, LEVELS.length - 1)]; }
+function getLvl() { return LEVELS[0]; }
 function fireGap() { return (H - GROUND_H) * getLvl().gapFraction; }
 
 // ── Bird image ────────────────────────────────────────────
@@ -112,16 +68,18 @@ const bird = {
 
   releaseFlap() { this.holding = false; },
 
-  update() {
+  update(dt) {
     const lvl = getLvl();
+    const timeScale = (typeof dt === 'number' && dt > 0) ? (dt / (1000 / 60)) : 1;
     // Extra lift while holding (small bonus, not doubling flap)
-    if (this.holding && this.vy < 0) this.vy += lvl.holdBonus;
+    if (this.holding && this.vy < 0) this.vy += lvl.holdBonus * timeScale;
     // Gravity: 0.32–0.46 px/frame², terminal velocity capped at 8 px/frame
-    this.vy  = Math.min(this.vy + lvl.gravity, lvl.maxFall);
-    this.y  += this.vy;
+    this.vy  = Math.min(this.vy + lvl.gravity * timeScale, lvl.maxFall);
+    this.y  += this.vy * timeScale;
     this.rot = Math.min(Math.max(this.vy * 3.5, -30), 85);
     const spd = this.vy < 0 ? 3 : 6;
-    if (++this.wingTimer >= spd) { this.wingFrame = (this.wingFrame + 1) % 3; this.wingTimer = 0; }
+    this.wingTimer += timeScale;
+    if (this.wingTimer >= spd) { this.wingFrame = (this.wingFrame + 1) % 3; this.wingTimer = 0; }
   },
 
   draw() {
@@ -195,83 +153,97 @@ function getFireHue() {
   return lo + Math.random() * (hi - lo);
 }
 
-// ── Draw animated vertical flame tongues ──────────────────
-// isTop=true  → flames hang DOWN from ceiling (y=0) toward gapY
-// isTop=false → flames shoot UP from ground (H-GROUND_H) toward gapY+gap
 function drawFlameWall(x, wallY, isTop, zoneH, hueRange, t) {
   if (zoneH <= 2) return;
 
-  const [lo, hi] = hueRange;
   const cx = x + NOZZLE_W / 2;
-
-  // Fixed boundary edges
   const boundaryY = isTop ? 0 : H - GROUND_H;
 
-  const tongueCount  = 6;
-  const tongueSpread = NOZZLE_W * 1.3;
+  ctx.globalCompositeOperation = 'lighter'; // Additive blending for realistic fire glow
 
-  for (let ti = 0; ti < tongueCount; ti++) {
-    const offset  = (ti / (tongueCount - 1) - 0.5) * tongueSpread;
-    const tx      = cx + offset;
-    const phase   = ti * 1.4 + t * (1.9 + ti * 0.35);
-    const flicker = 0.70 + 0.30 * Math.sin(phase);
+  // 1. Draw the roaring, chaotic fire column using layered wavy polygons
+  const layers = [
+    { color: 'hsla(10, 100%, 40%, 0.4)', widthScale: 1.5, speed: 6, wobbleAmp: 18 },
+    { color: 'hsla(25, 100%, 50%, 0.6)', widthScale: 1.1, speed: 8, wobbleAmp: 14 },
+    { color: 'hsla(40, 100%, 65%, 0.8)', widthScale: 0.7, speed: 10, wobbleAmp: 9 },
+    { color: 'rgba(255, 245, 230, 1)',   widthScale: 0.3, speed: 12, wobbleAmp: 4 },
+  ];
 
-    // Tongue reaches from the hard boundary toward the gap edge
-    // Height: 65–100% of the zone so it always touches the wall
-    const height  = zoneH * (0.65 + 0.35 * flicker);
+  // Number of jagged segments (lower = sharper flames, higher = smoother waves)
+  const steps = Math.max(6, Math.ceil(zoneH / 20));
+  const yStep = zoneH / steps;
 
-    // Base is always pinned to the wall boundary
-    const baseY = boundaryY + (isTop ? 0 : 0); // top wall: base at 0; bottom wall: base at H-GROUND_H
-    // Tip points toward the gap
-    const tipY  = isTop
-      ? baseY + height        // ceiling → tip points down
-      : baseY - height;       // floor   → tip points up
-
-    const tipX  = tx + Math.sin(phase * 1.7) * 7;
-    const cp1x  = tx  + Math.sin(phase * 0.9 + 1) * 11;
-    const cp1y  = isTop ? baseY + height * 0.30 : baseY - height * 0.30;
-    const cp2x  = tipX + Math.sin(phase * 1.3 + 2) * 8;
-    const cp2y  = isTop ? baseY + height * 0.68 : baseY - height * 0.68;
-
-    // Outer flame
-    const grad1 = ctx.createLinearGradient(tx, baseY, tipX, tipY);
-    grad1.addColorStop(0,   `hsla(${lo}, 100%, 55%, 0.92)`);
-    grad1.addColorStop(0.5, `hsla(${(lo+hi)/2}, 100%, 62%, 0.65)`);
-    grad1.addColorStop(1,   `hsla(${hi}, 100%, 72%, 0)`);
-    ctx.strokeStyle = grad1;
-    ctx.lineWidth   = 16 * flicker;
-    ctx.lineCap     = 'round';
-    ctx.shadowColor = `hsla(${lo}, 100%, 50%, 0.7)`;
-    ctx.shadowBlur  = 20;
+  for (let l = 0; l < layers.length; l++) {
+    const layer = layers[l];
+    ctx.fillStyle = layer.color;
     ctx.beginPath();
-    ctx.moveTo(tx, baseY);
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, tipX, tipY);
-    ctx.stroke();
 
-    // Middle yellow flame
-    const grad2 = ctx.createLinearGradient(tx, baseY, tipX, tipY);
-    grad2.addColorStop(0,   `hsla(40, 100%, 68%, 0.92)`);
-    grad2.addColorStop(0.6, `hsla(50, 100%, 78%, 0.5)`);
-    grad2.addColorStop(1,   `hsla(55, 100%, 92%, 0)`);
-    ctx.strokeStyle = grad2;
-    ctx.lineWidth   = 7 * flicker;
-    ctx.shadowBlur  = 10;
-    ctx.beginPath();
-    ctx.moveTo(tx, baseY);
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, tipX, tipY);
-    ctx.stroke();
-
-    // White-hot core
-    ctx.strokeStyle = `rgba(255,255,230,${0.75 * flicker})`;
-    ctx.lineWidth   = 2.5 * flicker;
-    ctx.shadowBlur  = 6;
-    ctx.beginPath();
-    ctx.moveTo(tx, baseY);
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, tipX, tipY);
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
+    // Left edge of the fire column
+    for (let i = 0; i <= steps; i++) {
+      const currentY = isTop ? boundaryY + i * yStep : boundaryY - i * yStep;
+      const progress = i / steps; 
+      
+      const wiggleLeft = Math.sin(t * layer.speed + i * 0.9 + l) * layer.wobbleAmp 
+                       + Math.sin(t * (layer.speed * 0.6) - i * 1.4) * (layer.wobbleAmp * 0.5);
+                       
+      const px = cx - (NOZZLE_W / 2 * layer.widthScale) + wiggleLeft;
+      
+      if (i === 0) ctx.moveTo(px, currentY);
+      else ctx.lineTo(px, currentY);
+    }
+    
+    // Right edge of the fire column (drawn in reverse to close the shape)
+    for (let i = steps; i >= 0; i--) {
+      const currentY = isTop ? boundaryY + i * yStep : boundaryY - i * yStep;
+      
+      const wiggleRight = Math.sin(t * layer.speed + i * 0.8 + l + 10) * layer.wobbleAmp 
+                        + Math.sin(t * (layer.speed * 0.7) - i * 1.2) * (layer.wobbleAmp * 0.5);
+                        
+      const px = cx + (NOZZLE_W / 2 * layer.widthScale) + wiggleRight;
+      ctx.lineTo(px, currentY);
+    }
+    
+    ctx.closePath();
+    ctx.fill();
   }
+
+  // 2. Draw detached, licking flame wisps peeling off the sides
+  for (let w = 0; w < 6; w++) {
+    const wispT = t * 1.5 + w * 2.5;
+    const progress = wispT % 1.0; // Wisps travel from base to nozzle
+    const side = (w % 2 === 0) ? -1 : 1;
+    const wispY = isTop ? boundaryY + zoneH * progress : boundaryY - zoneH * progress;
+    const wispX = cx + side * (NOZZLE_W * 0.7) + Math.sin(wispT * 8) * 12;
+    
+    ctx.fillStyle = `hsla(25, 100%, 55%, ${1 - Math.pow(progress, 2)})`;
+    ctx.beginPath();
+    
+    const wispBaseY = isTop ? wispY - 25 : wispY + 25;
+    ctx.moveTo(wispX - side * 12, wispBaseY);
+    ctx.lineTo(wispX + side * 12, wispBaseY);
+    
+    // Tip of wisp pointing towards nozzle
+    const wispTipY = isTop ? wispY + 45 : wispY - 45;
+    const wispTipX = wispX + Math.sin(wispT * 15) * 20;
+    ctx.lineTo(wispTipX, wispTipY);
+    ctx.fill();
+  }
+
+  // 3. Draw chaotic floating sparks/embers
+  for (let si = 0; si < 12; si++) {
+    const sparkT = t * (0.8 + (si % 4) * 0.3) + si * 3.1;
+    const sparkLife = sparkT % 1.0; 
+    const sparkX = cx + Math.sin(sparkT * 4 + si) * NOZZLE_W * 1.4;
+    const sparkY = isTop ? boundaryY + zoneH * sparkLife : boundaryY - zoneH * sparkLife;
+    const sparkSize = 5 * (1 - sparkLife) * (0.5 + 0.5 * Math.sin(sparkT * 20));
+    
+    ctx.fillStyle = `hsla(45, 100%, 70%, ${1 - sparkLife})`;
+    ctx.beginPath();
+    ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalCompositeOperation = 'source-over'; // restore default blend mode
 }
 
 function updateBlaster(b, dt) {
@@ -323,11 +295,12 @@ function drawBlaster(b, isTop) {
 
 function updateFirePairs(dt) {
   const lvl = getLvl();
+  const timeScale = (typeof dt === 'number' && dt > 0) ? (dt / (1000 / 60)) : 1;
   lastFireTime += dt;
   if (lastFireTime >= lvl.fireInterval) { spawnFirePair(); lastFireTime = 0; }
 
   for (const fp of firePairs) {
-    fp.x              -= lvl.fireSpeed;
+    fp.x              -= lvl.fireSpeed * timeScale;
     fp.topBlaster.x    = fp.x;
     fp.bottomBlaster.x = fp.x;
     // Keep blaster y synced if screen was resized
@@ -353,9 +326,9 @@ function checkFireCollisions() {
 
   for (const fp of firePairs) {
     // Score
-    if (!fp.scored && bird.x > fp.x + 30) {
+    if (!fp.scored && bird.x > fp.x + NOZZLE_W) {
       fp.scored = true; score++;
-      updateScoreDisplay(); checkLevelUp(); saveBest();
+      updateScoreDisplay(); saveBest();
     }
 
     // Collision: bird inside the nozzle x-range and outside the safe gap
@@ -368,61 +341,7 @@ function checkFireCollisions() {
   return false;
 }
 
-// ── Level up ──────────────────────────────────────────────
-function checkLevelUp() {
-  const idx = Math.min(Math.floor(score / SCORES_PER_LEVEL), LEVELS.length - 1);
-  if (idx > currentLevel) { currentLevel = idx; triggerLevelUp(); }
-}
 
-function triggerLevelUp() {
-  state = STATE.LEVELUP; levelUpTimer = LEVELUP_DUR;
-  firePairs = []; lastFireTime = 0;
-  cancelAnimationFrame(animFrameId);
-  lastTime = performance.now();
-  requestAnimationFrame(levelUpLoop);
-}
-
-function levelUpLoop(ts) {
-  if (state !== STATE.LEVELUP) return;
-  levelUpTimer -= ts - lastTime; lastTime = ts;
-  updateBackground(1);
-  drawBackground(); drawGround();
-  bird.update();
-  bird.y = Math.max(0, Math.min(H - GROUND_H - bird.h, bird.y));
-  bird.draw();
-  drawLevelUpOverlay(levelUpTimer / LEVELUP_DUR);
-  if (levelUpTimer <= 0) {
-    state = STATE.PLAYING; lastTime = performance.now();
-    animFrameId = requestAnimationFrame(loop);
-  } else {
-    requestAnimationFrame(levelUpLoop);
-  }
-}
-
-function drawLevelUpOverlay(progress) {
-  const lvl   = getLvl();
-  const alpha = Math.min(progress * 3, 1) * Math.min((1 - progress) * 3, 1);
-  ctx.fillStyle = `rgba(0,0,0,${0.5 * alpha})`;
-  ctx.fillRect(0, 0, W, H);
-
-  const bw = Math.min(320, W * 0.8), bh = 150;
-  const bx = (W - bw) / 2, by = (H - bh) / 2;
-  ctx.fillStyle = `rgba(20,5,0,${0.88 * alpha})`;
-  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 18); ctx.fill();
-  ctx.strokeStyle = `rgba(255,150,0,${0.8 * alpha})`; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 18); ctx.stroke();
-
-  ctx.globalAlpha = alpha; ctx.textAlign = 'center';
-  ctx.font = `bold ${Math.round(W * 0.038)}px Arial`; ctx.fillStyle = '#ffaa00';
-  ctx.fillText('LEVEL UP!', W/2, by + 30);
-  ctx.font = `bold ${Math.round(W * 0.064)}px Arial`; ctx.fillStyle = '#fff';
-  ctx.fillText(`${lvl.medal} Level ${lvl.num}`, W/2, by + 72);
-  ctx.font = `bold ${Math.round(W * 0.038)}px Arial`; ctx.fillStyle = '#ff8800';
-  ctx.fillText(lvl.name, W/2, by + 100);
-  ctx.font = `${Math.round(W * 0.030)}px Arial`; ctx.fillStyle = 'rgba(255,200,150,0.85)';
-  ctx.fillText(lvl.desc, W/2, by + 126);
-  ctx.globalAlpha = 1;
-}
 
 // ── Background ────────────────────────────────────────────
 let bgX = 0;
@@ -433,7 +352,8 @@ const drips = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 function updateBackground(dt) {
-  bgX -= getLvl().fireSpeed;
+  const timeScale = (typeof dt === 'number' && dt > 0) ? (dt / (1000 / 60)) : 1;
+  bgX -= getLvl().fireSpeed * timeScale;
   if (bgX <= -W) bgX = 0;
 }
 
@@ -500,10 +420,6 @@ let bestScore = parseInt(localStorage.getItem('flappyFireBest') || '0');
 
 function updateScoreDisplay() {
   document.getElementById('score').textContent = score;
-  const lvl      = getLvl();
-  document.getElementById('levelDisplay').textContent = `Lv ${lvl.num}`;
-  const progress = (score % SCORES_PER_LEVEL) / SCORES_PER_LEVEL;
-  document.getElementById('levelBar').style.width = (progress * 100) + '%';
 }
 
 function saveBest() {
@@ -522,16 +438,6 @@ function drawHUD() {
   ctx.strokeText(score, W / 2, fs + 10);
   ctx.fillStyle   = '#fff';
   ctx.fillText(score, W / 2, fs + 10);
-
-  const lvl = getLvl();
-  const bs  = Math.round(Math.min(W, H) * 0.026);
-  ctx.textAlign = 'right';
-  ctx.font      = `bold ${bs}px Arial`;
-  const lw = bs * 7;
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(W - lw - 10, 12, lw, bs + 10);
-  ctx.fillStyle = '#ffcc00';
-  ctx.fillText(`${lvl.medal} Lv ${lvl.num}`, W - 14, 12 + bs);
 }
 
 // ── Death flash & particles ───────────────────────────────
@@ -580,7 +486,7 @@ let flapHeld = false;
 function handleFlapDown() {
   flapHeld = true;
   if (state === STATE.IDLE)    { startGame(); return; }
-  if (state === STATE.PLAYING || state === STATE.LEVELUP) bird.flap();
+  if (state === STATE.PLAYING) bird.flap();
 }
 function handleFlapUp() { flapHeld = false; bird.releaseFlap(); }
 
@@ -608,7 +514,6 @@ function togglePause() {
     state = STATE.PAUSED;
   } else if (state === STATE.PAUSED) {
     state = STATE.PLAYING; lastTime = performance.now();
-    requestAnimationFrame(loop);
   }
 }
 
@@ -617,7 +522,7 @@ let lastTime    = 0;
 let animFrameId = null;
 
 function startGame() {
-  score = 0; currentLevel = 0;
+  score = 0;
   firePairs = []; deathParticles = [];
   lastFireTime = 0; flashAlpha = 0; idleT = 0;
   bird.reset(); bird.flap();
@@ -634,9 +539,7 @@ function startGame() {
 function killBird() {
   state = STATE.DEAD; flashAlpha = 0.9;
   spawnDeathParticles(); saveBest();
-  const lvl = getLvl();
   document.getElementById('finalScore').textContent   = score;
-  document.getElementById('finalLevel').textContent   = `${lvl.medal} ${lvl.name} (Lv ${lvl.num})`;
   document.getElementById('newBestLabel').textContent = score > 0 && score >= bestScore ? '🏆 New Best!' : '';
   document.getElementById('gameOverScreen').style.display = 'flex';
   cancelAnimationFrame(animFrameId);
@@ -645,6 +548,7 @@ function killBird() {
 }
 
 function deathLoop(ts) {
+  if (state !== STATE.DEAD) return;
   lastTime = ts;
   updateDeathParticles();
   flashAlpha = Math.max(0, flashAlpha - 0.05);
@@ -667,7 +571,7 @@ function loop(ts) {
 
   if (flapHeld) bird.holding = true;
 
-  updateBackground(dt); updateFirePairs(dt); bird.update();
+  updateBackground(dt); updateFirePairs(dt); bird.update(dt);
 
   if (bird.y < 0)                       { bird.y = 0; bird.vy = Math.max(0, bird.vy); }
   if (bird.y + bird.h >= H - GROUND_H)  { bird.y = H - GROUND_H - bird.h; killBird(); return; }
@@ -704,7 +608,5 @@ function idleLoop(ts) {
 // ── Init ──────────────────────────────────────────────────
 resize(); // set W/H first
 document.getElementById('bestScore').textContent    = bestScore;
-document.getElementById('levelDisplay').textContent = 'Lv 1';
-document.getElementById('levelBar').style.width     = '0%';
 document.getElementById('startScreen').style.display = 'flex';
 requestAnimationFrame(idleLoop);
